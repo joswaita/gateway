@@ -7,7 +7,14 @@ router.all('/:apiName/:path', (req, res) => {
     //route request to api
     console.log(req.params.apiName)
     if (registry.services[req.params.apiName]) {
-        axios.get(registry.services[req.params.apiName].url + req.params.path).then((response) => {
+        axios(
+            {
+                method: req.method,
+                url: registry.services[req.params.apiName].url + req.params.path,
+                data: req.body,
+                headers: req.headers
+            }
+        ).then((response) => {
             res.send(response.data)
         })
     } else {
