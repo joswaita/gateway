@@ -1,6 +1,7 @@
 import express from "express";
 import axios from "axios";
 import registry from './registry.json' assert { type: 'json' };
+import fs from 'fs'
 
 const router = express.Router();
 router.all('/:apiName/:path', (req, res) => {
@@ -20,6 +21,19 @@ router.all('/:apiName/:path', (req, res) => {
     } else {
         res.send("API not found")
     }
+})
+
+//register server endpoint
+router.post('/register', (req, res) => {
+    const registrationInfo = req.body;
+    registry.services[registrationInfo.apiName] = { ...registrationInfo }
+    fs.writeFile('./routes/registry.json', JSON.stringify(registry), (err) => {
+        if (err) {
+            res.send("Could not register" + registrationInfo.apiName + '\n' + err)
+        } else {
+            res.send("Successfully registered" + registrationInfo.apiName)
+        }
+    })
 })
 
 export default router
