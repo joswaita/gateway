@@ -40,13 +40,33 @@ router.post('/register', (req, res) => {
         registry.services[registrationInfo.apiName].push({ ...registrationInfo });
         fs.writeFile('./routes/registry.json', JSON.stringify(registry, null, 2), (err) => {
             if (err) {
-                res.status(500).send("Could not register " + registrationInfo.apiName + '\n' + err.message);
+                res.send("Could not register " + registrationInfo.apiName + '\n' + err.message);
             } else {
                 res.send("Successfully registered " + registrationInfo.apiName);
             }
         });
     }
-});
+})
+router.post('/unregister', (req, res) => {
+    const registrationInfo = req.body;
+    if (apiAlreadyExists(registrationInfo)) {
+        // Unregister
+        const index = registry.services[registrationInfo.apiName].findIndex((service) => {
+            return registrationInfo.url === service.url;
+        });
+        registry.services[registrationInfo.apiName].splice(index, 1);
+        fs.writeFile('./routes/registry.json', JSON.stringify(registry), (err) => {
+            if (err) {
+                res.send("Could not unregister " + registrationInfo.apiName + err);
+            } else {
+                res.send("Successfully unregistered " + registrationInfo.apiName);
+            }
+        });
+    } else {
+        res.status(404).send("Configuration does not exist for " + registrationInfo.apiName + ' at ' + registrationInfo.url);
+    }
+})
+
 
 const apiAlreadyExists = (registrationInfo) => {
     if (!registry.services[registrationInfo.apiName]) {
